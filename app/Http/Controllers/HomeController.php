@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\Home\StoreRequest;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -28,7 +28,7 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         if (is_array($request->categories)) {
             User::find(Auth::user()->id)->categories()->sync($request->categories);

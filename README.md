@@ -270,5 +270,97 @@ Route::post('/store', [App\Http\Controllers\HomeController::class, 'store'])->na
 
 最低1つは選択してもらうようにします
 
+`php artisan make:request Home/StoreRequest`で作成したファイルに記述します
 
-## 6. エラーデザインを記述する
+```php:StoreRequest.php
+<?php
+
+namespace App\Http\Requests\Home;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
+            'categories' => ['required']
+        ];
+    }
+}
+```
+
+作成したバリデーションをコントローラーで呼び出します
+
+```diff_php
+- use Illuminate\Support\Request
++ use App\Http\Requests\Home\StoreRequest; 
+
+// ...
+
+- public function store(Request $request)
++ public function store(StoreRequest $request)
+```
+
+エラーメッセージが表示されるようにViewも変更します
+
+```php:home.blade.php
+// ...
+<div class="card-body">
+    @if ($errors->any())
+        <div class="alert alert-danger mt-3">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+```
+
+## 6. バリデーションエラーデザインを記述する
+
+- 例えば他にも入力を受け付ける必須項目「一番興味のあるカテゴリ」があったとします
+- この項目がエラーとなって返ってきた時に、**以前チェックを入れた項目が保存されません**
+- 通常のinputであればoldメソッドを使うことでこの問題は解決するのですが、チェックボックスでは他の方法を探す必要があります...
+
+バリデーションエラーだけであれば、Requestファイルに項目を追加するだけで発生させることができるので、実際に試してみましょう
+
+```php:StoreRequest.php
+return [
+    'categories' => ['required'],
+    'name' => ['required']
+];
+```
+
+次に3つのチェックボックスそれぞれのinputタグの中に、条件によってcheckedを付与する記述を追加します
+
+```php:home.blade.php
+<div class="form-check form-check-inline">
+    <input class="form-check-input @error('categories') is-invalid @enderror"
+        type="checkbox" name="categories[]" id="frontend" value=1 @if (is_array(old('categories')) && in_array('1', old('categories'))) checked @endif>
+    <label class="form-check-label" for="frontend">
+        フロントエンド
+    </label>
+</div>
+```
+
+:::note info
+上記はvalue=1のフロントエンドに追記する例です
+他2つはそれぞれのvalueに合わせてin_arrayメソッドの第一引数を2,3と変更してください
+:::
