@@ -1,4 +1,4 @@
-# Laravel8 複数のチェックボックス(任意選択) 取扱方
+# Laravel8 複数のチェックボックス(任意選択) 取扱方 (ついでに中間テーブルも)
 
 ## 環境
 
@@ -22,10 +22,55 @@ php artisan serve
 
 ## 1. テーブルを作成する
 
-## 2. 表示画面を作成する
+- users・user_category・categoriesの3テーブルを使用します
+  - Usersテーブルは既存のものを使用します
+  - user_category, categoriesを以下で追加します
 
-## 3. 登録処理を作成する
+```zsh
+php artisan make:migration create_categories_table
+php artisan make:migration create_user_category_table
+```
 
-## 4. バリデーションを作成する
+```php:categories_table.php
+    public function up()
+    {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->timestamps();
+        });
+    }
+```
 
-## 5. エラーデザインを記述する
+```php:user_category_table.php
+    public function up()
+    {
+        Schema::create('user_category', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('category_id');
+            $table->timestamps();
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+
+            $table->foreign('category_id')
+                ->references('id')
+                ->on('categories')
+                ->onDelete('cascade');
+        });
+    }
+```
+
+`php artisan migrate`できたらOKです
+
+## 2. モデルにリレーションを追記する
+
+## 3. 表示画面を作成する
+
+## 4. 登録処理を作成する
+
+## 5. バリデーションを作成する
+
+## 6. エラーデザインを記述する
