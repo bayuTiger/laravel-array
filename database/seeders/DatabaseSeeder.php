@@ -13,6 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        if (config('app.env') === 'production') {
+            Log::error('本番環境でSeederの一括実行はできません。処理を終了します。');
+
+            return;
+        }
+        $this->call([
+            CategorySeeder::class,
+        ]);
     }
 }
